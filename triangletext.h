@@ -7,6 +7,8 @@
 class TriangleText : virtual public Text, virtual public RightTriangle{
 public:
     TriangleText(double x = 0, double y = 0, double a = 0, const std::string& newText = "", int newFontSize = 0);
+    TriangleText(QDataStream& stream);
+    void saveToStream(QDataStream& stream) const override;
 
     void print(std::ostream& out) override;
 private:

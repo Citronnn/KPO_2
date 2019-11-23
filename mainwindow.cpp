@@ -6,26 +6,28 @@
 #include <QMdiSubWindow>
 #include <QMdiArea>
 #include <QGraphicsView>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    this->setWindowTitle("Лабораторная №2");
     this->setFixedSize(QSize(this->width(), this->height()));
     auto newWindow = new FiguresSceneMdi(ui->mdiArea);
     auto newFiguresScene = ui->mdiArea->addSubWindow(newWindow);
+    newFiguresScene->setFixedSize(QSize(285, 320));
     newFiguresScene->setWindowTitle("Сцена");
 }
 
 FiguresScene *MainWindow::getCurrentScene() {
-    auto current_subwindow = ui->mdiArea->currentSubWindow();
-    if (current_subwindow) {
-        auto cur_scene_as_widget = current_subwindow->widget();
-        auto cur_scene_window = dynamic_cast<FiguresSceneMdi*>(cur_scene_as_widget);
+    auto currentSubwindow = ui->mdiArea->currentSubWindow();
+    if (currentSubwindow) {
+        auto currentScene = currentSubwindow->widget();
+        auto currentWindow = dynamic_cast<FiguresSceneMdi*>(currentScene);
 
-        return cur_scene_window->figureScene;
+        return currentWindow->figureScene;
     } else {
         return nullptr;
     }
@@ -116,6 +118,53 @@ void MainWindow::on_newSceneButton_clicked()
 {
     auto newWindow = new FiguresSceneMdi(ui->mdiArea);
     auto newFiguresScene = ui->mdiArea->addSubWindow(newWindow);
+    newFiguresScene->setFixedSize(QSize(285, 320));
     newFiguresScene->setWindowTitle("Сцена");
     newWindow->show();
+}
+
+void MainWindow::on_openAction_triggered()
+{
+    auto currentScene = getCurrentScene();
+        if (!currentScene) {
+            return;
+        }
+
+        auto file_name = QFileDialog::getOpenFileName(this, "Открыть из файла", QString(), "Text File(*.txt)");
+
+        if (file_name.isEmpty()) {
+            return;
+        }
+
+        QFile file(file_name);
+
+        if (file.open(QIODevice::ReadOnly)) {
+            QDataStream input(&file);
+            currentScene->deserialize(input);
+        }
+
+        file.close();
+}
+
+void MainWindow::on_saveAction_triggered()
+{
+    auto currentScene = getCurrentScene();
+        if (!currentScene) {
+            return;
+        }
+
+        auto file_name = QFileDialog::getSaveFileName(this, "Сохранить в файл", QString(), "Text File(*.txt)");
+
+        if (file_name.isEmpty()) {
+            return;
+        }
+
+        QFile file(file_name);
+
+        if (file.open(QIODevice::WriteOnly)) {
+            QDataStream output(&file);
+            currentScene->serialize(output);
+        }
+
+        file.close();
 }

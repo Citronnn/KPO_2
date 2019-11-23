@@ -7,6 +7,8 @@
 class Text : virtual public Shape{
 public:
     Text(double x = 0, double y = 0, const std::string& text = "", int fontSize = 0);
+    Text(QDataStream& stream);
+    void saveToStream(QDataStream& stream) const override;
 
     void print(std::ostream& out) override;
 

@@ -21,6 +21,9 @@ public:
     void setFigureRoundedRadius(int newRadius);
     void setFigureText(QString newText);
     void popFigure();
+    void clearSFiguresScene();
+    void serialize(QDataStream& stream);
+    void deserialize(QDataStream& stream);
     QString getFigureType() const;
     ~FiguresScene();
 

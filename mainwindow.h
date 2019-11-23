@@ -36,6 +36,10 @@ private slots:
 
     void on_newSceneButton_clicked();
 
+    void on_openAction_triggered();
+
+    void on_saveAction_triggered();
+
 private:
     Ui::MainWindow *ui;
     FiguresScene* getCurrentScene();

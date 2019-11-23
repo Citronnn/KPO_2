@@ -2,6 +2,7 @@
 #include "righttriangle.h"
 #include "righttriangleroundedcorners.h"
 #include "text.h"
+#include "shape.h"
 #include "triangletext.h"
 #include <QMouseEvent>
 #include <QGraphicsSceneEvent>
@@ -9,23 +10,6 @@
 FiguresScene::FiguresScene(QObject *parent)
     : QGraphicsScene(parent) {
     setItemIndexMethod(QGraphicsScene::NoIndex);
-//    ui->setupUi(this);
-//    this->setFixedSize(QSize(this->width(), this->height()));
-
-//    scene = new QGraphicsScene();   // Инициализируем графическую сцену
-//    //shape = new RightTriangle(0,0,50);      // Инициализируем треугольник
-
-//    ui->graphicsView->setScene(scene);  // Устанавливаем графическую сцену в graphicsView
-//    ui->graphicsView->setRenderHint(QPainter::Antialiasing);    // Устанавливаем сглаживание
-//    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); // Отключаем скроллбар по вертикали
-//    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); // Отключаем скроллбар по горизонтали
-//    //shape = new RightTriangleRoundedCorners(50,60,150,35);
-//    //shape = new Text(0,0,"qqqq", 12);
-//    shape = new TriangleText(0,0,150,"qqwq",12);
-//    scene->setSceneRect(-30,-30,40,40); // Устанавливае область графической сцены
-
-//    scene->addItem(shape);   // Добавляем на сцену треугольник
-//    shape->setPos(shape->getCentCoords().x,shape->getCentCoords().y);      // Устанавливаем треугольник в центр сцены
 }
 
 FiguresScene::~FiguresScene(){
@@ -54,15 +38,49 @@ void FiguresScene::setFigureText(QString newText) {
 }
 void FiguresScene::popFigure() {
     try {
-        std::cout<<figuresQueue.top()->getCentCoords().x<<" ~ "<<figuresQueue.top()->getCentCoords().y<<std::endl;
         auto item = this->itemAt(figuresQueue.top()->getCentCoords().x, figuresQueue.top()->getCentCoords().y, QTransform::fromScale(1, 1));
         this->removeItem(item);
         figuresQueue.pop();
         figuresCount--;
     } catch (QueueException& e) {
-        std::cout<<"kek"<<std::endl;
+        std::cout<<"Exception"<<std::endl;
     }
 
+}
+void FiguresScene::serialize(QDataStream &stream) {
+    stream << figuresQueue.size();
+    while (figuresQueue.size()) {
+        stream << *(figuresQueue.top());
+        popFigure();
+    }
+
+}
+void FiguresScene::clearSFiguresScene() {
+    this->clear();
+
+    while (figuresQueue.size()) {
+        figuresQueue.pop();
+    };
+}
+void FiguresScene::deserialize(QDataStream &stream) {
+    std::size_t figuresToLoadCount;
+    stream >> figuresToLoadCount;
+
+    if (figuresToLoadCount > 0) {
+        clearSFiguresScene();
+    } else {
+        return;
+    }
+
+    for (size_t i = 0; i < figuresToLoadCount; i++) {
+       Shape* figure = Shape::loadFigure(stream);
+
+        if (figure) {
+            this->addItem(figure);
+            figuresCount ++;
+            figuresQueue.push(figure, figuresCount);
+        }
+    }
 }
 
 QString FiguresScene::getFigureType() const {
@@ -83,11 +101,7 @@ void FiguresScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
         }
         shape->setPos(event->scenePos());
         this->addItem(shape);
-        std::cout << event->scenePos().rx() << " \\ " << event->scenePos().ry()<<std::endl;
-        std::cout << shape->getCentCoords().x << " * " << shape->getCentCoords().y<<std::endl;
         figuresCount ++;
         figuresQueue.push(shape, figuresCount);
-    } else {
-        std::cout << "qqqqqqqqqqqqqqqq"<<std::endl;
     }
 }

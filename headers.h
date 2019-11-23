@@ -12,6 +12,7 @@
 #include <QPainter>
 #include <QPen>
 #include <QTextOption>
+#include <QtMath>
 
 #include "Point.h"
 #include "Colour.h"

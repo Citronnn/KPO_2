@@ -5,6 +5,8 @@
 class RightTriangle : virtual public Shape{
 public:
     RightTriangle(double x = 0, double y = 0, double a = 0);
+    RightTriangle(QDataStream& stream);
+    void saveToStream(QDataStream& stream) const override;
 
     void print(std::ostream& out) override;
 
